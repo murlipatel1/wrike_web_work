@@ -1,6 +1,6 @@
 const axios = require('axios');
 const config = require('../config');
-const User = require('../models/user_wrike_monitask');
+const User = require('../models/user_wrike_webwork');
 
 /**
  * Get task details from Wrike API
@@ -14,7 +14,6 @@ exports.getTaskDetails = async (taskId) => {
         Authorization: `Bearer ${config.wrike.webhookSecret}`
       }
     });
-    
     return response.data.data[0];
   } catch (error) {
     console.error('Error fetching task details from Wrike:', error.message);
@@ -37,7 +36,7 @@ exports.getProjectName = async (projectId) => {
   }
 };
 
-exports.getMonitaskId = async (wrikeUserId) => {
+exports.getWebworkId = async (wrikeUserId) => {
   try {
     // Find the user in the database with the matching Wrike ID
     const user = await User.findOne({ wrikeId: wrikeUserId });
@@ -47,7 +46,7 @@ exports.getMonitaskId = async (wrikeUserId) => {
       throw new Error('User not found');
     }
     
-    console.log(`Found Time Doctor ID: ${user.monitaskId} for Wrike user: ${wrikeUserId}`);
+    console.log(`Found Time Doctor ID: ${user.webworkId} for Wrike user: ${wrikeUserId}`);
     return user;
   } catch (error) {
     console.error('Error fetching Time Doctor ID:', error.message);
@@ -59,11 +58,9 @@ exports.getMonitaskId = async (wrikeUserId) => {
 //call this api /tasks/{task.id}/timelogs?hours={timespent/3600}&trackedDate={dateOnly}
 exports.updateTaskTime = async (taskId, timeSpent, date) => {
   try {
-    const timeSpent2 = (timeSpent / 3600).toFixed(3);
+    const timeSpent2 = (timeSpent / 60).toFixed(3);
     console.log('Time Spent:', timeSpent2);
-    console.log('Date:', date);
-    console.log('Task ID:', taskId);
-    console.log('API Base:', config.wrike.apiBase);
+
     const response = await axios.post(`${config.wrike.apiBase}/tasks/${taskId}/timelogs?hours=${timeSpent2}&trackedDate=${date}`,
       {},
       {
