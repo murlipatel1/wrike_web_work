@@ -3,7 +3,6 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 const routes = require('./routes');
 const connectDB = require('./config/db');
-const { loadTokenFromDB } = require('./utils/tokenManager');
 const { startTaskScheduler } = require('./utils/taskScheduler');
 
 PORT = process.env.PORT || 5000;
