@@ -1,9 +1,9 @@
 const express = require('express');
-const wrikeTimeDoctorController = require('../controllers/wrikeMonitaskController');
+const wrikewebworkController = require('../controllers/wrikeWebworkController');
 
 const router = express.Router();
 
 // Wrike webhook endpoint
-router.post('/webhook', wrikeTimeDoctorController.handleWebhook);
+router.post('/webhook', wrikewebworkController.handleWebhook);
 
 module.exports = router;

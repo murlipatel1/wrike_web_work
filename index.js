@@ -37,11 +37,11 @@ app.use((err, req, res, next) => {
 // Start server
 app.listen(PORT, async () => {
   console.log('Server running on http://localhost:5000');
-  await loadTokenFromDB();
+  // await loadTokenFromDB();
 
-  setInterval(()=>{
-    loadTokenFromDB();
-    console.log('Token refreshed');
-  }, 50 * 60 * 1000); // Refresh token every 50 minutes
+  // setInterval(()=>{
+  //   loadTokenFromDB();
+  //   console.log('Token refreshed');
+  // }, 50 * 60 * 1000); // Refresh token every 50 minutes
 });
 

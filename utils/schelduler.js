@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const cron = require('node-cron');
 const connectDB = require('../config/db');
-const User = require('../models/user');
+const User = require('../models/user_wrike_webwork'); // Adjust the path to your User model
 require('dotenv').config();
 
 // connectDB();

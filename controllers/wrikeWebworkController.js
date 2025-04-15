@@ -11,7 +11,6 @@ exports.handleWebhook = async (req, res) => {
 
     // Get task details from Wrike
     const taskDetails = await wrikeService.getTaskDetails(taskID);
-    console.log('Task details:', taskDetails);
 
     const task = {
       id: taskID,
@@ -24,18 +23,19 @@ exports.handleWebhook = async (req, res) => {
       taskStartDate: taskDetails.dates.start
     };
 
-    if (task.parentIds[0] != config.wrike.rootFolderId)
+    if (taskDetails.parentIds[0] != config.wrike.rootFolderId)
     {
-      task.projectID = task.parentIds[0];
+      task.projectID = taskDetails.parentIds[0];
     }
 
-    // Check if task status changed to "In Progress"
+
+
+    // console.log('Task Details:', taskDetails);
     if (taskDetails.responsibleIds.length == 1 && task.statusId === config.wrike.inProgressStatusId &&
       task.oldStatusId !== config.wrike.inProgressStatusId) {
 
       const webworkUser = await wrikeService.getWebworkId(task.assignedUserId);
-      console.log('Webwork User ID:', webworkUser);
-
+      
       const projectName = await wrikeService.getProjectName(task.projectID);
       console.log('Project Name:', projectName);
 
@@ -45,15 +45,10 @@ exports.handleWebhook = async (req, res) => {
 
       //create task in webwork
       const webworkTaskId = await webworkService.createWebworkTask(webworkProjectId, task , webworkUser.webworkId);
-      console.log('Webwork TaskId', webworkTaskId);
+      console.log('Task created in WebWork');
       
 
     }
-
-    // Check if task status changed from "In Progress"
-    console.log('Task Status:', task.statusId);
-    console.log('Old Task Status:', task.oldStatusId);
-    console.log('In Progress Status:', config.wrike.inProgressStatusId);
 
     if (task.statusId !== config.wrike.inProgressStatusId && task.oldStatusId === config.wrike.inProgressStatusId) {
 
@@ -78,7 +73,7 @@ exports.handleWebhook = async (req, res) => {
       if(timeSpent > 0) await wrikeService.updateTaskTime(task.id, timeSpent, date);
 
       // delete the task from db by task.id
-      await webworkService.deleteWebworkTask(task.id);
+      await webworkService.deleteWebworkTask(webworkTask.webworkTaskId);
 
       //delete the task from webwork by task.id
       await webworkService.deleteWebworkTaskFromWebwork(webworkTask.webworkTaskId);

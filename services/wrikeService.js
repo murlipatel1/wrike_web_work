@@ -46,11 +46,10 @@ exports.getWebworkId = async (wrikeUserId) => {
       throw new Error('User not found');
     }
     
-    console.log(`Found Time Doctor ID: ${user.webworkId} for Wrike user: ${wrikeUserId}`);
     return user;
   } catch (error) {
-    console.error('Error fetching Time Doctor ID:', error.message);
-    throw new Error('Failed to fetch Time Doctor ID');
+    console.error('Error fetching Web Work ID:', error.message);
+    throw new Error('Failed to fetch Web Work ID');
   }
 };
 
