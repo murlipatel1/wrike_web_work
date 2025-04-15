@@ -27,6 +27,15 @@ const taskSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  wrikeEndDate:{
+    type: Date,
+    required: true,
+  },
+  wrikeEffort:
+  {
+    type: Number,
+    required: true, 
+  },
   createdAt: {
     type: Date,
     default: Date.now

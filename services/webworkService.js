@@ -191,6 +191,8 @@ exports.createWebworkTask = async (webworkProjectId, task, webworkUserid) => {
       webworkTaskId,
       email,
       webworkProjectId,
+      task.taskEndDate,
+      task.efforts,
       webworkUserid
     );
     return response.data;
@@ -227,6 +229,8 @@ const saveTaskMapping = async (
   webworkTaskId,
   email,
   webworkProjectId,
+  taskEndDate,
+  efforts,
   webworkUserId
 ) => {
   try {
@@ -235,6 +239,8 @@ const saveTaskMapping = async (
       webworkTaskId,
       email,
       webworkProjectId,
+      wrikeEndDate: taskEndDate,
+      wrikeEfforts: efforts,
       webworkUserId,
     });
     await taskMap.save();
@@ -280,41 +286,57 @@ exports.getTaskTime = async (webworkTask) => {
   console.log("Start Date:", start_date);
   console.log("End Date:", end_date);
 
-  try {
-    const response = await axios.get(
-      `${config.webwork.apiBase}/reports/full-data?start_date=${start_date}&end_date=${end_date}`,
-      {
-        headers: {
-          Authorization: `Basic ${Buffer.from(
-            `${config.webwork.apiUser}:${config.webwork.apiToken}`
-          ).toString("base64")}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    if (!response.data) {
-      throw new Error("Invalid response from Webwork API");
+  // First API call to get inactive minutes
+  const reportResponse = await axios.get(
+    `${config.webwork.apiBase}/reports/full-data?start_date=${start_date}&end_date=${end_date}`,
+    {
+      headers: {
+        Authorization: `Basic ${Buffer.from(
+          `${config.webwork.apiUser}:${config.webwork.apiToken}`
+        ).toString("base64")}`,
+        "Content-Type": "application/json",
+      },
     }
-    const report = response.data.dateReport.find(
-      (item) => item.email === email
-    );
-    if (!report) {
-      throw new Error("No report found for the given date range");
+  );
+
+  // Second API call to get budget minutes
+  const budgetResponse = await axios.get(
+    `${config.webwork.apiBase}/app/react-tasks/budget-with-time?task_id=${webworkTask.webworkTaskId}`,
+    {
+      headers: {
+        Authorization: `Basic ${Buffer.from(
+          `${config.webwork.apiUser}:${config.webwork.apiToken}`
+        ).toString("base64")}`,
+        "Content-Type": "application/json",
+      },
     }
-    const task = report.tasks.find(
-      (item) => item.taskId === webworkTask.webworkTaskId
-    );
-    if (!task) {
-      return 0;
-    }
-    return Number(task.minutes) - (task.inactive_minutes || 0)>0
-      ? Number(task.minutes) - (task.inactive_minutes || 0)
-      : 0;
-  } catch (error) {
-    console.error("Error getting task time:", error.message);
-    throw new Error("Failed to get task time");
+  );
+
+  if (!reportResponse.data || !budgetResponse.data) {
+    throw new Error("Invalid response from Webwork API");
   }
-};
+
+  // Find relevant report and task data
+  const report = reportResponse.data.dateReport.find(
+    (item) => item.email === email
+  );
+  const taskData = report?.tasks.find(
+    (item) => item.taskId === webworkTask.webworkTaskId
+  );
+
+  // Calculate active minutes (total - inactive)
+  const activeMinutes = taskData?.inactive_minutes ? taskData.inactive_minutes : 0;
+
+  //budget response is of form 00::00 hrs::minutes string..convert it into minutes number
+  budgetResponse.data.totalMinutes = budgetResponse.data.totalMinutes.split(":");
+  const budgetMinutes = (
+    parseInt(budgetResponse.data.totalMinutes[0]) * 60 +
+    parseInt(budgetResponse.data.totalMinutes[1])) || 0;
+
+  // Return the difference between active minutes and budget minutes
+  return Math.max(activeMinutes - budgetMinutes, 0);
+
+}
 
 exports.deleteWebworkTask = async (webworkTaskId) => {
   try {
@@ -398,7 +420,7 @@ const getContractsofProject = async (webworkProjectId, webworkUserId) => {
         contract.project_id === webworkProjectId &&
         contract.user_id === webworkUserId
     );
-    
+
     return contracts;
   } catch (error) {
     console.error("Error getting Webwork tasks by user ID:", error.message);

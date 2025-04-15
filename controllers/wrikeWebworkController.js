@@ -20,7 +20,9 @@ exports.handleWebhook = async (req, res) => {
       description: taskDetails.description,
       assignedUserId: taskDetails.responsibleIds[0],
       projectID: taskDetails.superParentIds[0],
-      taskStartDate: taskDetails.dates.start
+      taskStartDate: taskDetails.dates.start,
+      taskEndDate: taskDetails.dates.end,
+      efforts : taskDetails.effortAllocation.totalEffort
     };
 
     if (taskDetails.parentIds[0] != config.wrike.rootFolderId)
@@ -82,6 +84,12 @@ exports.handleWebhook = async (req, res) => {
       await webworkService.removeAssignee(webworkUserId, webworkProjectId);
 
     }
+
+    //every 2 hours..get all tasks from task db then call getTaskTime function for each task..
+    //check if the time returned is > task.wrikeEffort or date.now > task.wrikeEndDate.. 
+    // then call wrike update status api to make status completed 
+    // put request /tasks/taskid?customStatus=config.wrike.completedStatusId
+    
     res.sendStatus(200);
   } catch (error) {
     console.error('Webhook error:', error);

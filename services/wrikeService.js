@@ -9,7 +9,7 @@ const User = require('../models/user_wrike_webwork');
  */
 exports.getTaskDetails = async (taskId) => {
   try {
-    const response = await axios.get(`${config.wrike.apiBase}/tasks/${taskId}`, {
+    const response = await axios.get(`${config.wrike.apiBase}/tasks/${taskId}?fields=[effortAllocation]`, {
       headers: {
         Authorization: `Bearer ${config.wrike.webhookSecret}`
       }
@@ -76,3 +76,26 @@ exports.updateTaskTime = async (taskId, timeSpent, date) => {
     throw new Error('Failed to update task time');
   }
 }
+
+exports.updateTaskStatus = async (taskId, statusId) => {
+  try {
+    const response = await axios.put(
+      `${config.wrike.apiBase}/tasks/${taskId}`,
+      {
+        customStatus: statusId
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${config.wrike.webhookSecret}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    console.log(`Task ${taskId} status updated to ${statusId}`);
+    return response.data.data[0];
+  } catch (error) {
+    console.error('Error updating task status in Wrike:', error.message);
+    throw new Error('Failed to update task status in Wrike');
+  }
+};

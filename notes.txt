@@ -1,16 +1,7 @@
+time sync every 10 minutes 
 
-from assigned wrike user id take monitaskuserid
-project already exists db call
-    so here from wrike_project_id take monitask_project_id 
-    check if monitaskuserid present in monitask_project_id details ? 
-        return monitask_project_id
-        :
-        update monitask project by monitask_project_id to ass monitaskuserid
-        and return monitask_project_id    
-    :
-    create project and in assignees add monitaskuserid add to database
+wrike task created must have efforts and date
 
+time app api webwork app
 
-get task details by taskid 
-add the task time to wrike time 
-remove task by taskid
+task edited in wrike update in webwork
