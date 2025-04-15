@@ -16,7 +16,7 @@ const taskSchema = new mongoose.Schema({
     unique: true
   },
   webworkProjectId: {
-    type: String,
+    type: Number,
     required: true, 
   },
   webworkUserId: {
