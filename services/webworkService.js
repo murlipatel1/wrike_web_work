@@ -184,12 +184,15 @@ exports.createWebworkTask = async (webworkProjectId, task, webworkUserid) => {
     const user = await User.findOne({ webworkId: webworkUserid });
     const email = user.email;
 
+    console.log("task end date", task.taskEndDate);
+
     // Save mapping to database
     await saveTaskMapping(
       wrikeTaskId,
       webworkTaskId,
       email,
       webworkProjectId,
+      task.taskStartDate,
       task.taskEndDate,
       task.efforts,
       webworkUserid
@@ -228,18 +231,31 @@ const saveTaskMapping = async (
   webworkTaskId,
   email,
   webworkProjectId,
+  taskStartDate,
   taskEndDate,
   efforts,
   webworkUserId
 ) => {
   try {
+    console.log("Saving task mapping:", {
+      wrikeTaskId,
+      webworkTaskId,
+      email,
+      webworkProjectId,
+      taskStartDate,
+      taskEndDate,
+      efforts,
+      webworkUserId,
+    });
+
     const taskMap = new Task({
       wrikeTaskId,
       webworkTaskId,
       email,
       webworkProjectId,
+      wrikeStartDate:taskStartDate,
       wrikeEndDate: taskEndDate,
-      wrikeEfforts: efforts,
+      wrikeEffort: efforts,
       webworkUserId,
     });
     await taskMap.save();
@@ -285,6 +301,8 @@ exports.getTaskTime = async (webworkTask) => {
   console.log("Start Date:", start_date);
   console.log("End Date:", end_date);
 
+  // call this api after 4 minutes use set timout
+
   // First API call to get inactive minutes
   const reportResponse = await axios.get(
     `${config.webwork.apiBase}/reports/full-data?start_date=${start_date}&end_date=${end_date}`,
@@ -298,23 +316,9 @@ exports.getTaskTime = async (webworkTask) => {
     }
   );
 
-  // Second API call to get budget minutes
-  const budgetResponse = await axios.get(
-    `${config.webwork.apiBase}/app/react-tasks/budget-with-time?task_id=${webworkTask.webworkTaskId}`,
-    {
-      headers: {
-        Authorization: `Basic ${Buffer.from(
-          `${config.webwork.apiUser}:${config.webwork.apiToken}`
-        ).toString("base64")}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  if (!reportResponse.data || !budgetResponse.data) {
+  if (!reportResponse.data) {
     throw new Error("Invalid response from Webwork API");
   }
-
   // Find relevant report and task data
   const report = reportResponse.data.dateReport.find(
     (item) => item.email === email
@@ -323,19 +327,16 @@ exports.getTaskTime = async (webworkTask) => {
     (item) => item.taskId === webworkTask.webworkTaskId
   );
 
-  // Calculate active minutes (total - inactive)
-  const activeMinutes = taskData?.inactive_minutes ? taskData.inactive_minutes : 0;
-
-  //budget response is of form 00::00 hrs::minutes string..convert it into minutes number
-  budgetResponse.data.totalMinutes = budgetResponse.data.totalMinutes.split(":");
-  const budgetMinutes = (
-    parseInt(budgetResponse.data.totalMinutes[0]) * 60 +
-    parseInt(budgetResponse.data.totalMinutes[1])) || 0;
+  console.log("Task Data: of report", taskData);
 
   // Return the difference between active minutes and budget minutes
-  return Math.max(activeMinutes - budgetMinutes, 0);
-
-}
+  if (taskData) {
+    mins = taskData?.minutes ? Number(taskData?.minutes) : 0;
+    in_mins = taskData?.inactive_minutes ? taskData?.inactive_minutes : 0;
+    return Math.max(mins - in_mins, 0);
+  }
+  return 0;
+};
 
 exports.deleteWebworkTask = async (webworkTaskId) => {
   try {
@@ -445,3 +446,61 @@ const deleteContract = async (contractid) => {
     throw new Error("Failed to delete Webwork task");
   }
 };
+
+exports.updateTaskTimeinDB = async (wrikeTaskId, timeSpent) => {
+  //update the time spent in the database by timeSpentinwebwork
+  try {
+    const response = await Task.findOneAndUpdate(
+      { wrikeTaskId },
+      { timeSpent },
+      { new: true }
+    );
+    if (!response) {
+      throw new Error("Task not found in database");
+    }
+    console.log("Task time updated in DB:", response);
+  } catch (error) {
+    console.error("Error updating task time in DB:", error.message);
+    throw new Error("Failed to update task time in DB");
+  }
+};
+
+exports.updateTaskEffortinDB = async (wrikeTaskId, effort) => {
+  //update the effort in the database by wrikeTaskId
+  try {
+    const response = await Task.findOneAndUpdate(
+      { wrikeTaskId },
+      { wrikeEffort: effort },
+      { new: true }
+    );
+    if (!response) {
+      throw new Error("Task not found in database");
+    }
+    console.log("Task effort updated in DB:", response);
+  } catch (error) {
+    console.error("Error updating task effort in DB:", error.message);
+    throw new Error("Failed to update task effort in DB");
+  }
+}
+
+exports.updateTaskDate = async (
+  wrikeTaskId,
+  taskStartDate,
+  taskEndDate
+) => {
+  //update the task start date and end date in the database by wrikeTaskId
+  try {
+    const response = await Task.findOneAndUpdate(
+      { wrikeTaskId },
+      { wrikeStartDate: taskStartDate, wrikeEndDate: taskEndDate },
+      { new: true }
+    );
+    if (!response) {
+      throw new Error("Task not found in database");
+    }
+    console.log("Task date updated in DB:", response);
+  } catch (error) {
+    console.error("Error updating task date in DB:", error.message);
+    throw new Error("Failed to update task date in DB");
+  }
+}

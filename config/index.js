@@ -9,7 +9,9 @@ module.exports = {
     },
     webwork:{
       apiBase: process.env.WEB_WORK_API_BASE,
+      apiBase2: process.env.WEB_WORK_API_BASE_2,
       apiToken: process.env.WEB_WORK_API_TOKEN,
       apiUser : process.env.WEB_WORK_USERNAME,
+
     }
   };

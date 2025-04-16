@@ -32,8 +32,10 @@ app.use((err, req, res, next) => {
   res.status(500).send('Server error');
 });
 
-// Start server
+// Start server 
 app.listen(PORT, async () => {
   console.log('Server running on http://localhost:5000');
+
 });
+
 

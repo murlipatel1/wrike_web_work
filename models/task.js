@@ -27,6 +27,10 @@ const taskSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  wrikeStartDate: {
+    type: Date,
+    required: true,
+  },
   wrikeEndDate:{
     type: Date,
     required: true,
@@ -35,6 +39,10 @@ const taskSchema = new mongoose.Schema({
   {
     type: Number,
     required: true, 
+  },
+  timeSpent: {
+    type: Number, 
+    default:0
   },
   createdAt: {
     type: Date,

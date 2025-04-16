@@ -60,6 +60,9 @@ exports.updateTaskTime = async (taskId, timeSpent, date) => {
     const timeSpent2 = (timeSpent / 60).toFixed(3);
     console.log('Time Spent:', timeSpent2);
 
+    // get the wrike time spendt in hours
+
+
     const response = await axios.post(`${config.wrike.apiBase}/tasks/${taskId}/timelogs?hours=${timeSpent2}&trackedDate=${date}`,
       {},
       {
@@ -99,3 +102,25 @@ exports.updateTaskStatus = async (taskId, statusId) => {
     throw new Error('Failed to update task status in Wrike');
   }
 };
+
+exports.getTaskTimeSpent = async (taskId) => {
+  try {
+    const response = await axios.get(`${config.wrike.apiBase}/tasks/${taskId}/timelogs`, {
+      headers: {
+        Authorization: `Bearer ${config.wrike.webhookSecret}`
+      }
+    });
+    if(response.data.data.length === 0) {
+      console.log('No time logs found for this task.');
+      return 0;
+    }
+    const timeSpent = response.data.data.reduce((acc, log) => acc + log.hours, 0) * 60; 
+    console.log('Time Spent:', timeSpent);
+
+    return timeSpent;
+
+  } catch (error) {
+    console.error('Error fetching task time spent from Wrike:', error.message);
+    throw new Error('Failed to fetch task time spent from Wrike');
+  }
+}
