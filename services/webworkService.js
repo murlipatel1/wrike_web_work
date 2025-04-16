@@ -74,7 +74,6 @@ async function addUserToWebworkProject(webworkProjectId, webworkUserId) {
 
 async function getWebworkProjectAssignees(webworkProjectId) {
   try {
-    // const accessToken = getAccessToken();
     const response = await axios.get(`${config.webwork.apiBase}/contracts`, {
       headers: {
         Authorization: `Basic ${Buffer.from(

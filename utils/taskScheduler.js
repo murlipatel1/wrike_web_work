@@ -92,7 +92,7 @@ const checkAndUpdateTaskStatus = async () => {
 const startTaskScheduler = () => {
   // Run every 2 hours  '0 */2 * * *'
   // Run every 1 minute '*/1 * * * *'
-  cron.schedule("*/1 * * * *", async () => {
+  cron.schedule("*/10 * * * *", async () => {
     try {
       await checkAndUpdateTaskStatus();
     } catch (error) {

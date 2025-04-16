@@ -2,11 +2,6 @@ const axios = require('axios');
 const config = require('../config');
 const User = require('../models/user_wrike_webwork');
 
-/**
- * Get task details from Wrike API
- * @param {string} taskId - The Wrike task ID
- * @returns {Promise<Object>} - Task details
- */
 exports.getTaskDetails = async (taskId) => {
   try {
     const response = await axios.get(`${config.wrike.apiBase}/tasks/${taskId}?fields=[effortAllocation]`, {
