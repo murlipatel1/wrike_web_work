@@ -4,7 +4,7 @@ require('dotenv').config();
 const routes = require('./routes');
 const connectDB = require('./config/db');
 const { startTaskScheduler } = require('./utils/taskScheduler');
-const { startApiLogger } = require('./utils/apiLogger');
+const { startApiLogger } = require('./services/apiLoggerService');
 
 PORT = process.env.PORT || 5000;
 const cors = require('cors');

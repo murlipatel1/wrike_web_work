@@ -25,6 +25,8 @@ const logDatabaseApiCall = () => {
 const saveApiLogs = async () => {
   try {
     // Create a new log entry with the current counters
+    logDatabaseApiCall(); // Assuming this is the function to increment the database counter
+
     const apiLog = new ApiLog({
       wrikeApiCalls,
       webworkApiCalls,
@@ -33,7 +35,6 @@ const saveApiLogs = async () => {
     });
 
     // Save to database
-    logDatabaseApiCall(); // Assuming this is the function to increment the database counter
     await apiLog.save();
     console.log(`API Log saved: Wrike: ${wrikeApiCalls}, WebWork: ${webworkApiCalls}, DB: ${databaseApiCalls}`);
 
