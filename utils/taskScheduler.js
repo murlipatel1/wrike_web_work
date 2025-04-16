@@ -1,19 +1,59 @@
 const cron = require("node-cron");
 const Task = require("../models/task");
+const Setting = require("../models/setting");
 const webworkService = require("../services/webworkService");
 const wrikeService = require("../services/wrikeService");
 const config = require("../config");
-const { logDatabaseApiCall } = require("../services/apiLoggerService");
+const { logDatabaseApiCall } = require("../services/apiLoggerService")
+
+
+//..............................//
+const CURSOR_KEY = "task_cursor";
+const BATCH_SIZE_KEY = "batch_size";
+
+const getCursor = async () => {
+  logDatabaseApiCall();
+  const setting = await Setting.findOne({ key: CURSOR_KEY });
+  return setting ? parseInt(setting.value, 10) : 0;
+};
+
+const updateCursor = async (cursor) => {
+  logDatabaseApiCall();
+  await Setting.findOneAndUpdate(
+    { key: CURSOR_KEY },
+    { value: cursor.toString() },
+    { upsert: true, new: true }
+  );
+};
+const getBatchSize = async () => {
+  logDatabaseApiCall();
+  const setting = await Setting.findOne({ key: BATCH_SIZE_KEY });
+  return setting ? parseInt(setting.value, 10) : DEFAULT_BATCH_SIZE;
+};
+//..............................//
+
+
 
 const checkAndUpdateTaskStatus = async () => {
   try {
     console.log("Starting scheduled task status check...");
     // Get all tasks from the database
     logDatabaseApiCall();
-    const tasks = await Task.find();
+    const tasks = await Task.find().sort({ _id: 1 });
     console.log(`Found ${tasks.length} tasks to check`);
 
-    for (const task of tasks) {
+
+    //..............................//
+    const totalTasks = tasks.length;
+    const batchSize = await getBatchSize();
+    const currentCursor = await getCursor();
+    const start = currentCursor >= totalTasks ? 0 : currentCursor;
+    const end = Math.min(start + batchSize, totalTasks);
+    const batch = tasks.slice(start, end);
+    //..............................//
+
+
+    for (const task of batch) {
       try {
         // Get time spent on the task from WebWork
         const timeSpentinwebwork = await webworkService.getTaskTime(task);
@@ -58,10 +98,8 @@ const checkAndUpdateTaskStatus = async () => {
           currentDate < startDate
         ) {
           console.log(
-            `Task ${
-              task.wrikeTaskId
-            } needs to be completed: Time spent = ${timeSpent}, Effort = ${
-              task.wrikeEffort
+            `Task ${task.wrikeTaskId
+            } needs to be completed: Time spent = ${timeSpent}, Effort = ${task.wrikeEffort
             }, End date = ${endDate.toISOString()}`
           );
 
@@ -85,7 +123,16 @@ const checkAndUpdateTaskStatus = async () => {
         );
       }
     }
+
+    //..............................//
+
+    const newCursor = end >= totalTasks ? 0 : end;
+    await updateCursor(newCursor);
+    console.log(`Cursor updated to ${newCursor}`);
+    //..............................//
+
     console.log("Scheduled task status check completed");
+
   } catch (error) {
     console.error("Error in checkAndUpdateTaskStatus:", error.message);
   }
@@ -94,7 +141,7 @@ const checkAndUpdateTaskStatus = async () => {
 const startTaskScheduler = () => {
   // Run every 2 hours  '0 */2 * * *'
   // Run every 1 minute '*/1 * * * *'
-  cron.schedule("*/10 * * * *", async () => {
+  cron.schedule("*/1 * * * *", async () => {
     try {
       await checkAndUpdateTaskStatus();
     } catch (error) {
