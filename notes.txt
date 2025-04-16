@@ -1,7 +1,18 @@
-time sync every 10 minutes 
+wrike token expired - days remaining
 
-wrike task created must have efforts and date
+webwork token expired - days remaining
 
-time app api webwork app
+send mail when 27 days are remaining to change token of wrike
 
-task edited in wrike update in webwork
+change cron scheduler time
+
+users data db show
+
+api logs
+
+
+
+
+base,flexible time effort
+user have to refresh when task is removed
+cron scheduler api calling

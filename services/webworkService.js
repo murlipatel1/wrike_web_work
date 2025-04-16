@@ -3,6 +3,7 @@ const ProjectMap = require("../models/project_map");
 const Task = require("../models/task");
 const User = require("../models/user_wrike_webwork");
 const config = require("../config");
+const { logDatabaseApiCall, logWebworkApiCall } = require("./apiLoggerService");
 
 exports.getWebworkProjectId = async (
   wrikeProjectId,
@@ -11,6 +12,7 @@ exports.getWebworkProjectId = async (
 ) => {
   try {
     // Check if mapping already exists in database
+    logDatabaseApiCall();
     const existingMapping = await ProjectMap.findOne({ wrikeProjectId });
 
     if (existingMapping) {
@@ -47,6 +49,7 @@ exports.getWebworkProjectId = async (
 
 async function addUserToWebworkProject(webworkProjectId, webworkUserId) {
   try {
+    logWebworkApiCall();
     const response = await axios.post(
       `${config.webwork.apiBase}/contracts`,
 
@@ -74,6 +77,7 @@ async function addUserToWebworkProject(webworkProjectId, webworkUserId) {
 
 async function getWebworkProjectAssignees(webworkProjectId) {
   try {
+    logWebworkApiCall();
     const response = await axios.get(`${config.webwork.apiBase}/contracts`, {
       headers: {
         Authorization: `Basic ${Buffer.from(
@@ -100,7 +104,9 @@ async function createWebworkProject(
   projectName,
   webworkUserId
 ) {
+  
   try {
+    logWebworkApiCall();
     const response = await axios.post(
       `${config.webwork.apiBase}/projects`,
       {
@@ -144,6 +150,7 @@ async function saveProjectMapping(wrikeProjectId, webworkProjectId) {
       webworkProjectId,
     });
 
+    logDatabaseApiCall();
     await projectMap.save();
     return projectMap;
   } catch (error) {
@@ -154,6 +161,7 @@ async function saveProjectMapping(wrikeProjectId, webworkProjectId) {
 
 exports.createWebworkTask = async (webworkProjectId, task, webworkUserid) => {
   try {
+    logWebworkApiCall();
     const response = await axios.post(
       //call /notes api
       `${config.webwork.apiBase}/tasks`,
@@ -180,6 +188,7 @@ exports.createWebworkTask = async (webworkProjectId, task, webworkUserid) => {
     const wrikeTaskId = task.id;
 
     //get email from db of user_wrike_webork by task.assignedUserId
+    logDatabaseApiCall();
     const user = await User.findOne({ webworkId: webworkUserid });
     const email = user.email;
 
@@ -205,6 +214,7 @@ exports.createWebworkTask = async (webworkProjectId, task, webworkUserid) => {
 
 const addUserToWebworkTask = async (webworkTaskId, webworkUserId) => {
   try {
+    logWebworkApiCall();
     const response = await axios.get(
       `${config.webwork.apiBase}/tasks/assign/${webworkTaskId}/${webworkUserId}`,
       {
@@ -257,6 +267,7 @@ const saveTaskMapping = async (
       wrikeEffort: efforts,
       webworkUserId,
     });
+    logDatabaseApiCall();
     await taskMap.save();
     return taskMap;
   } catch (error) {
@@ -267,6 +278,7 @@ const saveTaskMapping = async (
 
 exports.getWebworkTaskId = async (wrikeTaskId) => {
   try {
+    logDatabaseApiCall();
     const task = await Task.findOne({ wrikeTaskId });
     return task;
   } catch (error) {
@@ -277,6 +289,7 @@ exports.getWebworkTaskId = async (wrikeTaskId) => {
 
 exports.getWebworkProjectID = async (wrikeProjectId) => {
   try {
+    logDatabaseApiCall();
     const project = await ProjectMap.findOne({ wrikeProjectId });
     return project.webworkProjectId;
   } catch (error) {
@@ -303,6 +316,7 @@ exports.getTaskTime = async (webworkTask) => {
   // call this api after 4 minutes use set timout
 
   // First API call to get inactive minutes
+  logWebworkApiCall();
   const reportResponse = await axios.get(
     `${config.webwork.apiBase}/reports/full-data?start_date=${start_date}&end_date=${end_date}`,
     {
@@ -339,6 +353,7 @@ exports.getTaskTime = async (webworkTask) => {
 
 exports.deleteWebworkTask = async (webworkTaskId) => {
   try {
+    logDatabaseApiCall();
     const task = await Task.findOneAndDelete({ webworkTaskId });
     return task;
   } catch (error) {
@@ -349,6 +364,7 @@ exports.deleteWebworkTask = async (webworkTaskId) => {
 
 exports.deleteWebworkTaskFromWebwork = async (webworkTaskId) => {
   try {
+    logWebworkApiCall();
     const response = await axios.delete(
       `${config.webwork.apiBase}/tasks/${webworkTaskId}`,
       {
@@ -371,6 +387,7 @@ exports.deleteWebworkTaskFromWebwork = async (webworkTaskId) => {
 
 exports.removeAssignee = async (webworkUserId, webworkProjectId) => {
   try {
+    logDatabaseApiCall();
     const tasks = await Task.find({ webworkUserId });
     console.log("Tasks:", tasks);
     //find in the tasks if there is a task with the given webworkProjectId
@@ -401,6 +418,7 @@ exports.removeAssignee = async (webworkUserId, webworkProjectId) => {
 
 const getContractsofProject = async (webworkProjectId, webworkUserId) => {
   try {
+    logWebworkApiCall();
     const response = await axios.get(`${config.webwork.apiBase}/contracts`, {
       headers: {
         Authorization: `Basic ${Buffer.from(
@@ -429,6 +447,7 @@ const getContractsofProject = async (webworkProjectId, webworkUserId) => {
 
 const deleteContract = async (contractid) => {
   try {
+    logWebworkApiCall();
     const response = await axios.delete(
       `${config.webwork.apiBase}/contracts/${contractid}`,
       {
@@ -449,6 +468,7 @@ const deleteContract = async (contractid) => {
 exports.updateTaskTimeinDB = async (wrikeTaskId, timeSpent) => {
   //update the time spent in the database by timeSpentinwebwork
   try {
+    logDatabaseApiCall();
     const response = await Task.findOneAndUpdate(
       { wrikeTaskId },
       { timeSpent },
@@ -467,6 +487,7 @@ exports.updateTaskTimeinDB = async (wrikeTaskId, timeSpent) => {
 exports.updateTaskEffortinDB = async (wrikeTaskId, effort) => {
   //update the effort in the database by wrikeTaskId
   try {
+    logDatabaseApiCall();
     const response = await Task.findOneAndUpdate(
       { wrikeTaskId },
       { wrikeEffort: effort },
@@ -489,6 +510,7 @@ exports.updateTaskDate = async (
 ) => {
   //update the task start date and end date in the database by wrikeTaskId
   try {
+    logDatabaseApiCall();
     const response = await Task.findOneAndUpdate(
       { wrikeTaskId },
       { wrikeStartDate: taskStartDate, wrikeEndDate: taskEndDate },

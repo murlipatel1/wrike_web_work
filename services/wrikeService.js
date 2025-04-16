@@ -1,9 +1,11 @@
 const axios = require('axios');
 const config = require('../config');
 const User = require('../models/user_wrike_webwork');
+const { logWrikeApiCall, logDatabaseApiCall } = require('./apiLoggerService');
 
 exports.getTaskDetails = async (taskId) => {
   try {
+    logWrikeApiCall();
     const response = await axios.get(`${config.wrike.apiBase}/tasks/${taskId}?fields=[effortAllocation]`, {
       headers: {
         Authorization: `Bearer ${config.wrike.webhookSecret}`
@@ -18,12 +20,13 @@ exports.getTaskDetails = async (taskId) => {
 
 exports.getProjectName = async (projectId) => {
   try {
+    logWrikeApiCall();
     const response = await axios.get(`${config.wrike.apiBase}/folders/${projectId}`, {
       headers: {
         Authorization: `Bearer ${config.wrike.webhookSecret}`
       }
     });
-    
+
     return response.data.data[0].title;
   } catch (error) {
     console.error('Error fetching task details from Wrike:', error.message);
@@ -33,14 +36,15 @@ exports.getProjectName = async (projectId) => {
 
 exports.getWebworkId = async (wrikeUserId) => {
   try {
+    logDatabaseApiCall();
     // Find the user in the database with the matching Wrike ID
     const user = await User.findOne({ wrikeId: wrikeUserId });
-    
+
     if (!user) {
       console.error(`No user found with Wrike ID: ${wrikeUserId}`);
       throw new Error('User not found');
     }
-    
+
     return user;
   } catch (error) {
     console.error('Error fetching Web Work ID:', error.message);
@@ -57,7 +61,7 @@ exports.updateTaskTime = async (taskId, timeSpent, date) => {
 
     // get the wrike time spendt in hours
 
-
+    logWrikeApiCall();
     const response = await axios.post(`${config.wrike.apiBase}/tasks/${taskId}/timelogs?hours=${timeSpent2}&trackedDate=${date}`,
       {},
       {
@@ -77,6 +81,7 @@ exports.updateTaskTime = async (taskId, timeSpent, date) => {
 
 exports.updateTaskStatus = async (taskId, statusId) => {
   try {
+    logWrikeApiCall();
     const response = await axios.put(
       `${config.wrike.apiBase}/tasks/${taskId}`,
       {
@@ -89,7 +94,7 @@ exports.updateTaskStatus = async (taskId, statusId) => {
         }
       }
     );
-    
+
     console.log(`Task ${taskId} status updated to ${statusId}`);
     return response.data.data[0];
   } catch (error) {
@@ -100,16 +105,17 @@ exports.updateTaskStatus = async (taskId, statusId) => {
 
 exports.getTaskTimeSpent = async (taskId) => {
   try {
+    logWrikeApiCall();
     const response = await axios.get(`${config.wrike.apiBase}/tasks/${taskId}/timelogs`, {
       headers: {
         Authorization: `Bearer ${config.wrike.webhookSecret}`
       }
     });
-    if(response.data.data.length === 0) {
+    if (response.data.data.length === 0) {
       console.log('No time logs found for this task.');
       return 0;
     }
-    const timeSpent = response.data.data.reduce((acc, log) => acc + log.hours, 0) * 60; 
+    const timeSpent = response.data.data.reduce((acc, log) => acc + log.hours, 0) * 60;
     console.log('Time Spent:', timeSpent);
 
     return timeSpent;

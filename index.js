@@ -4,6 +4,7 @@ require('dotenv').config();
 const routes = require('./routes');
 const connectDB = require('./config/db');
 const { startTaskScheduler } = require('./utils/taskScheduler');
+const { startApiLogger } = require('./utils/apiLogger');
 
 PORT = process.env.PORT || 5000;
 const cors = require('cors');
@@ -24,7 +25,7 @@ app.use(cors({
 app.use('/', routes);
 
 startTaskScheduler();
-
+startApiLogger();
 
 // Error handling middleware
 app.use((err, req, res, next) => {

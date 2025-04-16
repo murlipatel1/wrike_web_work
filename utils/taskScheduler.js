@@ -3,11 +3,13 @@ const Task = require("../models/task");
 const webworkService = require("../services/webworkService");
 const wrikeService = require("../services/wrikeService");
 const config = require("../config");
+const { logDatabaseApiCall } = require("../services/apiLoggerService");
 
 const checkAndUpdateTaskStatus = async () => {
   try {
     console.log("Starting scheduled task status check...");
     // Get all tasks from the database
+    logDatabaseApiCall();
     const tasks = await Task.find();
     console.log(`Found ${tasks.length} tasks to check`);
 
