@@ -11,6 +11,9 @@ users data db show
 
 api logs
 
+delete tasks if not created properly
+
+
 
 
 
@@ -19,3 +22,22 @@ api logs
 base,flexible time effort
 user have to refresh when task is removed
 cron scheduler api calling
+
+
+
+
+
+create new task in project
+
+create new sub task in project
+
+remove manual task when status change then time will take time to update within range 5 to 15 minutes
+
+add task from on hold to in progress and continue work
+
+the task sync will done every 2 hr
+
+again task created then time will sync in wrike same , no extra logs
+
+
+no task is not getting 
