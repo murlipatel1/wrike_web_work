@@ -17,6 +17,7 @@
     "mongoose": "^8.13.0",
     "node-cron": "^3.0.3",
     "nodejs-app": "file:",
+    "nodemailer": "^6.10.1",
     "nodemon": "^3.1.9"
   },
   "devDependencies": {
