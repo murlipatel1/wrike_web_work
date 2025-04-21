@@ -10,6 +10,7 @@ const { logDatabaseApiCall } = require("../services/apiLoggerService")
 //..............................//
 const CURSOR_KEY = "task_cursor";
 const BATCH_SIZE_KEY = "batch_size";
+const DEFAULT_BATCH_SIZE = 10;
 
 const getCursor = async () => {
   logDatabaseApiCall();
