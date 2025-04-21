@@ -5,6 +5,7 @@ module.exports = {
       webhookSecret: process.env.WRIKE_WEBHOOK_SECRET,
       inProgressStatusId: process.env.WRIKE_IN_PROGRESS_STATUS_ID,
       completedStatusId: process.env.WRIKE_COMPLETED_STATUS_ID,
+      todoStatusId: process.env.WRIKE_TODO_STATUS_ID,
       rootFolderId: process.env.WRIKE_ROOT_FOLDER_ID
     },
     webwork:{
@@ -12,6 +13,5 @@ module.exports = {
       apiBase2: process.env.WEB_WORK_API_BASE_2,
       apiToken: process.env.WEB_WORK_API_TOKEN,
       apiUser : process.env.WEB_WORK_USERNAME,
-
     }
   };

@@ -1,4 +1,4 @@
-wrike token expired - days remaining
+\wrike token expired - days remaining
 
 webwork token expired - days remaining
 
@@ -7,11 +7,45 @@ send mail when 27 days are remaining to change token of wrike
 change cron scheduler time -
 change batch size
 
-users data db show
+users data db show\
+
 
 api logs
 
 delete tasks if not created properly
+
+
+
+api -
+
+tasks Routes
+ get all task by date decending 
+
+ delete task in db by webworkid
+ delete task in webwrok by webworkid 
+ (and make status change again in wrike)
+
+user Routes
+ get user information
+ add user table
+ delete user table
+ update user table
+
+Token Routes
+wrike token get  ( used in both frontend and backend)
+webwork token get ( used in both frontend and backend)
+update token wrike
+update token webwork
+
+
+scheduler 1 day to check if token expired and send nodemailer mail
+
+get batch size
+change batch size
+
+api logs get
+
+loginuser
 
 
 

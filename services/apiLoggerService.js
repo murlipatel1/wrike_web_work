@@ -47,6 +47,22 @@ const saveApiLogs = async () => {
   }
 };
 
+// Function to delete old API logs (older than 3 days)
+const cleanupOldApiLogs = async () => {
+  try {
+    // Calculate date 3 days ago
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    
+    // Delete logs older than 3 days
+    const result = await ApiLog.deleteMany({ timestamp: { $lt: threeDaysAgo } });
+    
+    console.log(`Cleaned up ${result.deletedCount} API logs older than 3 days`);
+  } catch (error) {
+    console.error('Error cleaning up old API logs:', error.message);
+  }
+};
+
 // Function to start the API logging scheduler
 const startApiLogger = () => {
   // Schedule to run every minute
@@ -58,32 +74,24 @@ const startApiLogger = () => {
     }
   });
 
-  console.log('API logger initialized, logging every minute');
-};
+  // Schedule cleanup to run every day at midnight (12 AM)
+  cron.schedule('0 0 * * *', async () => {
+    try {
+      console.log('Starting API logs cleanup...');
+      await cleanupOldApiLogs();
+    } catch (error) {
+      console.error('API logs cleanup scheduler error:', error.message);
+    }
+  });
 
-// // Function to get API logs for a specific time range
-// const getApiLogs = async (startDate, endDate) => {
-//   try {
-//     const query = {};
-//     if (startDate && endDate) {
-//       query.timestamp = { $gte: new Date(startDate), $lte: new Date(endDate) };
-//     } else if (startDate) {
-//       query.timestamp = { $gte: new Date(startDate) };
-//     } else if (endDate) {
-//       query.timestamp = { $lte: new Date(endDate) };
-//     }
-    
-//     return await ApiLog.find(query).sort({ timestamp: -1 });
-//   } catch (error) {
-//     console.error('Error fetching API logs:', error.message);
-//     throw new Error('Failed to fetch API logs');
-//   }
-// };
+  console.log('API logger initialized, logging every minute');
+  console.log('API logs cleanup scheduled to run daily at midnight');
+};
 
 module.exports = {
   logWrikeApiCall,
   logWebworkApiCall,
   logDatabaseApiCall,
   startApiLogger,
-//   getApiLogs
+  cleanupOldApiLogs // Export for testing purposes
 };

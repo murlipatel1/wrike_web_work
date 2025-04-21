@@ -2,13 +2,14 @@ const axios = require('axios');
 const config = require('../config');
 const User = require('../models/user_wrike_webwork');
 const { logWrikeApiCall, logDatabaseApiCall } = require('./apiLoggerService');
+const { getWrikeToken } = require('./tokenService');
 
 exports.getTaskDetails = async (taskId) => {
   try {
     logWrikeApiCall();
     const response = await axios.get(`${config.wrike.apiBase}/tasks/${taskId}?fields=[effortAllocation]`, {
       headers: {
-        Authorization: `Bearer ${config.wrike.webhookSecret}`
+        Authorization: `Bearer ${getWrikeToken()}`
       }
     });
     return response.data.data[0];
@@ -23,7 +24,7 @@ exports.getProjectName = async (projectId) => {
     logWrikeApiCall();
     const response = await axios.get(`${config.wrike.apiBase}/folders/${projectId}`, {
       headers: {
-        Authorization: `Bearer ${config.wrike.webhookSecret}`
+        Authorization: `Bearer ${getWrikeToken()}`
       }
     });
 
@@ -52,21 +53,17 @@ exports.getWebworkId = async (wrikeUserId) => {
   }
 };
 
-
-//call this api /tasks/{task.id}/timelogs?hours={timespent/3600}&trackedDate={dateOnly}
 exports.updateTaskTime = async (taskId, timeSpent, date) => {
   try {
     const timeSpent2 = (timeSpent / 60).toFixed(3);
     console.log('Time Spent:', timeSpent2);
-
-    // get the wrike time spendt in hours
 
     logWrikeApiCall();
     const response = await axios.post(`${config.wrike.apiBase}/tasks/${taskId}/timelogs?hours=${timeSpent2}&trackedDate=${date}`,
       {},
       {
         headers: {
-          Authorization: `Bearer ${config.wrike.webhookSecret}`
+          Authorization: `Bearer ${getWrikeToken()}`
         }
       }
     );
@@ -89,7 +86,7 @@ exports.updateTaskStatus = async (taskId, statusId) => {
       },
       {
         headers: {
-          Authorization: `Bearer ${config.wrike.webhookSecret}`,
+          Authorization: `Bearer ${getWrikeToken()}`,
           'Content-Type': 'application/json'
         }
       }
@@ -108,7 +105,7 @@ exports.getTaskTimeSpent = async (taskId) => {
     logWrikeApiCall();
     const response = await axios.get(`${config.wrike.apiBase}/tasks/${taskId}/timelogs`, {
       headers: {
-        Authorization: `Bearer ${config.wrike.webhookSecret}`
+        Authorization: `Bearer ${getWrikeToken()}`
       }
     });
     if (response.data.data.length === 0) {

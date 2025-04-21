@@ -5,6 +5,7 @@ const routes = require('./routes');
 const connectDB = require('./config/db');
 const { startTaskScheduler } = require('./utils/taskScheduler');
 const { startApiLogger } = require('./services/apiLoggerService');
+const { initializeTokens} = require('./services/tokenService');
 
 PORT = process.env.PORT || 5000;
 const cors = require('cors');
@@ -21,9 +22,20 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Initialize tokens from database
+(async () => {
+  try {
+    await initializeTokens();
+    console.log('Tokens initialized successfully');
+  } catch (error) {
+    console.error('Error initializing tokens:', error.message);
+  }
+})();
+
 // Routes
 app.use('/', routes);
 
+// Start schedulers
 startTaskScheduler();
 startApiLogger();
 

@@ -4,6 +4,7 @@ const Task = require("../models/task");
 const User = require("../models/user_wrike_webwork");
 const config = require("../config");
 const { logDatabaseApiCall, logWebworkApiCall } = require("./apiLoggerService");
+const { getWebworkToken } = require("./tokenService");
 
 exports.getWebworkProjectId = async (
   wrikeProjectId,
@@ -50,9 +51,9 @@ exports.getWebworkProjectId = async (
 async function addUserToWebworkProject(webworkProjectId, webworkUserId) {
   try {
     logWebworkApiCall();
+    const { token } = getWebworkToken();
     const response = await axios.post(
       `${config.webwork.apiBase}/contracts`,
-
       {
         project_id: webworkProjectId,
         user_id: webworkUserId,
@@ -60,7 +61,7 @@ async function addUserToWebworkProject(webworkProjectId, webworkUserId) {
       {
         headers: {
           Authorization: `Basic ${Buffer.from(
-            `${config.webwork.apiUser}:${config.webwork.apiToken}`
+            `${config.webwork.apiUser}:${token}`
           ).toString("base64")}`,
           "Content-Type": "application/json",
         },
@@ -78,10 +79,11 @@ async function addUserToWebworkProject(webworkProjectId, webworkUserId) {
 async function getWebworkProjectAssignees(webworkProjectId) {
   try {
     logWebworkApiCall();
+    const { token } = getWebworkToken();
     const response = await axios.get(`${config.webwork.apiBase}/contracts`, {
       headers: {
         Authorization: `Basic ${Buffer.from(
-          `${config.webwork.apiUser}:${config.webwork.apiToken}`
+          `${config.webwork.apiUser}:${token}`
         ).toString("base64")}`,
         "Content-Type": "application/json",
       },
@@ -107,6 +109,7 @@ async function createWebworkProject(
   
   try {
     logWebworkApiCall();
+    const { token } = getWebworkToken();
     const response = await axios.post(
       `${config.webwork.apiBase}/projects`,
       {
@@ -115,7 +118,7 @@ async function createWebworkProject(
       {
         headers: {
           Authorization: `Basic ${Buffer.from(
-            `${config.webwork.apiUser}:${config.webwork.apiToken}`
+            `${config.webwork.apiUser}:${token}`
           ).toString("base64")}`,
           "Content-Type": "application/json",
         },
@@ -162,6 +165,7 @@ async function saveProjectMapping(wrikeProjectId, webworkProjectId) {
 exports.createWebworkTask = async (webworkProjectId, task, webworkUserid) => {
   try {
     logWebworkApiCall();
+    const { token } = getWebworkToken();
     const response = await axios.post(
       //call /notes api
       `${config.webwork.apiBase}/tasks`,
@@ -173,7 +177,7 @@ exports.createWebworkTask = async (webworkProjectId, task, webworkUserid) => {
       {
         headers: {
           Authorization: `Basic ${Buffer.from(
-            `${config.webwork.apiUser}:${config.webwork.apiToken}`
+            `${config.webwork.apiUser}:${token}`
           ).toString("base64")}`,
           "Content-Type": "application/json",
         },
@@ -215,12 +219,13 @@ exports.createWebworkTask = async (webworkProjectId, task, webworkUserid) => {
 const addUserToWebworkTask = async (webworkTaskId, webworkUserId) => {
   try {
     logWebworkApiCall();
+    const { token } = getWebworkToken();
     const response = await axios.get(
       `${config.webwork.apiBase}/tasks/assign/${webworkTaskId}/${webworkUserId}`,
       {
         headers: {
           Authorization: `Basic ${Buffer.from(
-            `${config.webwork.apiUser}:${config.webwork.apiToken}`
+            `${config.webwork.apiUser}:${token}`
           ).toString("base64")}`,
           "Content-Type": "application/json",
         },
@@ -317,12 +322,13 @@ exports.getTaskTime = async (webworkTask) => {
 
   // First API call to get inactive minutes
   logWebworkApiCall();
+  const { token } = getWebworkToken();
   const reportResponse = await axios.get(
     `${config.webwork.apiBase}/reports/full-data?start_date=${start_date}&end_date=${end_date}`,
     {
       headers: {
         Authorization: `Basic ${Buffer.from(
-          `${config.webwork.apiUser}:${config.webwork.apiToken}`
+          `${config.webwork.apiUser}:${token}`
         ).toString("base64")}`,
         "Content-Type": "application/json",
       },
@@ -364,13 +370,14 @@ exports.deleteWebworkTask = async (webworkTaskId) => {
 
 exports.deleteWebworkTaskFromWebwork = async (webworkTaskId) => {
   try {
-    logWebworkApiCall();
+    logWebworkApiCall()
+    const { token } = getWebworkToken();
     const response = await axios.delete(
       `${config.webwork.apiBase}/tasks/${webworkTaskId}`,
       {
         headers: {
           Authorization: `Basic ${Buffer.from(
-            `${config.webwork.apiUser}:${config.webwork.apiToken}`
+            `${config.webwork.apiUser}:${token}`
           ).toString("base64")}`,
           "Content-Type": "application/json",
         },
@@ -419,10 +426,11 @@ exports.removeAssignee = async (webworkUserId, webworkProjectId) => {
 const getContractsofProject = async (webworkProjectId, webworkUserId) => {
   try {
     logWebworkApiCall();
+    const { token } = getWebworkToken();
     const response = await axios.get(`${config.webwork.apiBase}/contracts`, {
       headers: {
         Authorization: `Basic ${Buffer.from(
-          `${config.webwork.apiUser}:${config.webwork.apiToken}`
+          `${config.webwork.apiUser}:${token}`
         ).toString("base64")}`,
         "Content-Type": "application/json",
       },
@@ -448,12 +456,13 @@ const getContractsofProject = async (webworkProjectId, webworkUserId) => {
 const deleteContract = async (contractid) => {
   try {
     logWebworkApiCall();
+    const { token } = getWebworkToken();
     const response = await axios.delete(
       `${config.webwork.apiBase}/contracts/${contractid}`,
       {
         headers: {
           Authorization: `Basic ${Buffer.from(
-            `${config.webwork.apiUser}:${config.webwork.apiToken}`
+            `${config.webwork.apiUser}:${token}`
           ).toString("base64")}`,
           "Content-Type": "application/json",
         },
