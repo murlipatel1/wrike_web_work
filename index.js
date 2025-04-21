@@ -16,11 +16,7 @@ connectDB(); // Connect to MongoDB
 
 // Middleware
 app.use(bodyParser.json());
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors());
 
 // Initialize tokens from database
 (async () => {
@@ -33,7 +29,7 @@ app.use(cors({
 })();
 
 // Routes
-app.use('/', routes);
+app.use('/api', routes);
 
 // Start schedulers
 startTaskScheduler();
