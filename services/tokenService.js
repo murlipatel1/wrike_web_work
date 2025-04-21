@@ -10,9 +10,9 @@ let globalTokens = {
 // Initialize tokens from database
 const initializeTokens = async () => {
   try {
-    logDatabaseApiCall();
+    // logDatabaseApiCall();
     const tokens = await Token.find();
-    
+    console.log('Tokens from database:', tokens); // Add this line for debugging purposes
     tokens.forEach(token => {
       if (token.name === 'wrike') {
         globalTokens.wrike = token.token;
@@ -22,7 +22,6 @@ const initializeTokens = async () => {
     });
     
     console.log('Tokens initialized from database');
-
     return globalTokens;
 
   } catch (error) {

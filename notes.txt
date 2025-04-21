@@ -41,7 +41,6 @@ change batch size
 
 api logs get
 
-
 scheduler 1 day to check if token expired and send nodemailer mail
 
 loginuser 
