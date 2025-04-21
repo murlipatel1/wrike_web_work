@@ -45,7 +45,10 @@ change batch size
 
 api logs get
 
-loginuser
+loginuser 
+
+getwebworkuserid by email
+getwrikeuserid by email
 
 
 

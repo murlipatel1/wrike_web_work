@@ -4,6 +4,7 @@ const taskRoutes = require('./taskRoutes');
 const userRoutes = require('./userRoutes');
 const tokenRoutes = require('./tokenRoutes');
 const apiLogRoutes = require('./apiLogRoutes');
+const settingRoutes = require('./settingRoutes');
 
 const router = express.Router();
 
@@ -13,6 +14,7 @@ router.use('/tasks', taskRoutes);
 router.use('/users', userRoutes);
 router.use('/tokens', tokenRoutes);
 router.use('/api-logs', apiLogRoutes);
+router.use('/settings', settingRoutes);
 
 // Health check route
 router.get('/health', (req, res) => {
