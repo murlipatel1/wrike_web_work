@@ -1,5 +1,6 @@
 const Token = require('../models/token');
-const { logDatabaseApiCall } = require('./apiLoggerService');
+// const { globalTokens } = require('../utils/globals');
+const {logDatabaseApiCall} = require('./apiLoggerService');
 
 // Global token storage
 let globalTokens = {
@@ -11,22 +12,33 @@ let globalTokens = {
 const initializeTokens = async () => {
   try {
     // logDatabaseApiCall();
-    const tokens = await Token.find();
-    console.log('Tokens from database:', tokens); // Add this line for debugging purposes
-    tokens.forEach(token => {
-      if (token.name === 'wrike') {
-        globalTokens.wrike = token.token;
-      } else if (token.name === 'webwork') {
-        globalTokens.webwork= token.token;
-      }
+    // Reset global tokens
+    globalTokens = { wrike: null, webwork: null };
+
+    // Get all tokens in one query
+    const tokens = await Token.find({
+      name: { $in: ['wrike', 'webwork'] }
     });
-    
+
+    // Validate both tokens exist
+    const foundNames = new Set(tokens.map(t => t.name));
+    const missingTokens = ['wrike', 'webwork'].filter(name => !foundNames.has(name));
+
+    if (missingTokens.length > 0) {
+      throw new Error(`Missing tokens in database: ${missingTokens.join(', ')}`);
+    }
+
+    // Update global tokens
+    tokens.forEach(token => {
+      globalTokens[token.name] = token.token;
+    });
+
     console.log('Tokens initialized from database');
     return globalTokens;
 
   } catch (error) {
     console.error('Error initializing tokens:', error.message);
-    throw new Error('Failed to initialize tokens');
+    throw new Error(`Token initialization failed: ${error.message}`);
   }
 };
 
@@ -43,14 +55,15 @@ const getWebworkToken = () => {
 // Get WebWork token expiry days remaining
 const getWebworkTokenExpiryDays = async () => {
   try {
-    logDatabaseApiCall();
+    // logDatabaseApiCall();
     const webworkToken = await Token.findOne({ name: 'webwork' });
     
     if (!webworkToken) {
       throw new Error('WebWork token not found');
     }
-    
+    console.log('WebWork Token:', webworkToken);
     const updatedAt = new Date(webworkToken.updatedAt);
+    console.log('Updated At:', updatedAt);
     const currentDate = new Date();
     
     // WebWork tokens expire after 30 days
@@ -75,7 +88,7 @@ const getWebworkTokenExpiryDays = async () => {
 // Update Wrike token
 const updateWrikeToken = async (token) => {
   try {
-    logDatabaseApiCall();
+    // logDatabaseApiCall();
     const updatedToken = await Token.findOneAndUpdate(
       { name: 'wrike' },
       { 
@@ -98,7 +111,7 @@ const updateWrikeToken = async (token) => {
 // Update WebWork token
 const updateWebworkToken = async (token) => {
   try {
-    logDatabaseApiCall();
+    // logDatabaseApiCall();
     const updatedToken = await Token.findOneAndUpdate(
       { name: 'webwork' },
       { 
